@@ -78,9 +78,12 @@ function onClick(event){
 
 }
 
-function showInfo(data, tabletop){
+var data;
+function showInfo(table, tabletop){
+  data = table;
   locations = L.featureGroup();
   data.forEach(function(d, i) {
+      d.today = d.metasubmissionTime.slice(0,10);
       var lat = parseFloat(d.latitude)
       var lng = parseFloat(d.longitude)
       if(!isNaN(lat) && !isNaN(lng)) {
@@ -97,6 +100,98 @@ function showInfo(data, tabletop){
   locations.addTo(map);
   map.fitBounds(locations.getBounds())
   doneLoading();
+}
+
+function drawCalendar(){
+
+  var calendarColumns = function(month){
+    //expects the month floor e.g. `Tue Mar 01 2016 00:00:00 GMT-0500 (EST)`
+    return d3.time.weeks(d3.time.week.floor(month), d3.time.month.offset(month,1)).length
+  }
+
+  var minDate = d3.min(calendarData, function(d) { return new Date(d.today) })
+  // var maxDate = new Date("2016-03-28")
+  var maxDate = d3.max(calendarData, function(d) { return new Date(d.today) })
+
+
+ var cellMargin = 2,
+     cellSize = 20;
+
+ var day = d3.time.format("%w"),
+     week = d3.time.format("%U"),
+     percent = d3.format(".1%"),
+     format = d3.time.format("%Y-%m-%d"),
+     titleFormat = d3.time.format.utc("%a, %d %b");
+     monthName = d3.time.format("%B"),
+     months= d3.time.month.range(d3.time.month.floor(minDate), maxDate);
+
+ var svg = d3.select("#calendar").selectAll("svg")
+     .data(months)
+     .enter().append("svg")
+       .attr("height", (cellSize * 7) + (cellMargin * 8) + 20)
+       .attr("width", function(d) {
+          var columns = calendarColumns(d);
+          return (cellSize * columns) + (cellMargin * (columns + 1));
+        })
+       .attr("class", "month")
+     .append("g")
+
+   d3.select("#calendar").selectAll("svg").append("text")
+      .attr("y", (cellSize * 7) + (cellMargin * 8) + 15 )
+      .attr("x", function(d) {
+        var columns = calendarColumns(d);
+        return ((cellSize * columns) + (cellMargin * (columns + 1))) / 2;
+      })
+      .attr("class", "month-name")
+      .attr("text-anchor", "middle")
+      .text(function(d) { return monthName(d); })
+
+ var rect = svg.selectAll("rect.day")
+     .data(function(d, i) { return d3.time.days(d, new Date(d.getFullYear(), d.getMonth()+1, 1)); })
+     .enter().append("rect")
+       .attr("class", "day")
+       .attr("width", cellSize)
+       .attr("height", cellSize)
+       .attr("rx", 3)
+       .attr("ry", 3)
+       .attr("fill", '#eaeaea')
+       .attr("y", function(d) { return (day(d) * cellSize) + (day(d) * cellMargin) + cellMargin; })
+       .attr("x", function(d) { return ((week(d) - week(new Date(d.getFullYear(),d.getMonth(),1))) * cellSize) + ((week(d) - week(new Date(d.getFullYear(),d.getMonth(),1))) * cellMargin) + cellMargin ; })
+       .on("mouseover", function(d) {
+         d3.select(this).classed('hover', true);
+       })
+       .on("mouseout", function(d) {
+         d3.select(this).classed('hover', false);
+       })
+      .datum(format);
+
+ rect.append("title")
+    .text(function(d) { return titleFormat(new Date(d)); });
+
+  var data = d3.nest()
+    .key(function(d) { return d.today; })
+    .rollup(function(leaves) { return leaves.length; })
+    .map(calendarData);
+
+
+    var color = d3.scale.quantize()
+      .domain(d3.extent(calendarData, function(d) { return parseInt(d.count) }))
+      .range(["#9ecae1","#6baed6","#4292c6","#2171b5","#08519c","#08306b"]);
+      // Every ColorBrewer Scale
+      // http://bl.ocks.org/mbostock/raw/5577023/
+
+  rect.filter(function(d) { return d in data; })
+      .style("fill", function(d) { return color(data[d]) })
+      // .classed("clickable", true)
+      // .on("click", function(d){
+      //   if(d3.select(this).classed('focus')){
+      //     d3.select(this).classed('focus', false)
+      //   } else { d3.select(this).classed('focus', true)  }
+      //   filterMap();
+      // })
+    .select("title")
+      .text(function(d) { return titleFormat(new Date(d)) + ":  " + data[d]; });
+
 }
 
 function doneLoading(){

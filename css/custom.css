@@ -33,6 +33,22 @@ html, body {
   max-width: 100%;
 }
 
+.functioning {
+  background-color: #4daf4a;
+  border-radius: 3px;
+  padding: 3px;
+}
+.partial {
+  background-color: #ff7f00;
+  border-radius: 3px;
+  padding: 3px;
+}
+.non-functioning {
+  background-color: #e41a1c;
+  border-radius: 3px;
+  padding: 3px;
+}
+
 /*.btn-zoom {
   position: absolute;
   left: 10px;
