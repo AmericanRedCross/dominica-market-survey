@@ -20,7 +20,7 @@ html, body {
 #infoWrapper{
   overflow: auto;
 }
-#info-location {
+#info-location, #info-filters {
   padding: 0px 12px 24px 12px;
 }
 #info-header{
@@ -47,6 +47,26 @@ html, body {
   background-color: #e41a1c;
   border-radius: 3px;
   padding: 3px;
+}
+
+#calendar {
+  margin: 20px;
+}
+.month {
+  margin-right: 8px;
+}
+.month-name {
+  font-size: 85%;
+  fill: #777;
+  font-family: Arial, Helvetica;
+}
+.day.hover {
+  stroke: #6d6E70;
+  stroke-width: 2;
+}
+.day.focus {
+  stroke: #ffff33;
+  stroke-width: 2;
 }
 
 /*.btn-zoom {
