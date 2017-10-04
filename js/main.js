@@ -3,6 +3,7 @@ var windowH = $(window).height();
 $("#map-container").height(windowH);
 $("#infoWrapper").height(windowH);
 
+$("#info-pic-loading").hide();
 
 // create basic leaflet map
 // ========================
@@ -90,19 +91,28 @@ function onClick(event){
     var indicatorMarker = L.circleMarker([lat,lng], markerOptions).addTo(indicator);
     indicatorMarker.bringToBack();
 
-    if(locProps['institution-name'] == "other"){
-      $('#info-location-name').text(locProps['institution-name_other']);
-    } else {
-      $('#info-location-name').text(locProps['institution-name']);
-    }
+    var loadedCount = 0;
+    var loadingCount = 1;
+    $("#info-pic-loading").show();
+
+    $('#info-location-name').text(locProps['name']);
     $('#info-location-type').text(locProps['type']);
     $('#info-location-status').text(locProps['status']);
     $('#info-location-notes').text(locProps['status-notes']);
 
-    var picUrl = "https://arcimagery.s3.amazonaws.com/disasters/2017-dominica-maria/financial_inst_and_market_assessment/" +
-      locProps['picture0'];
-    var picHtml = '<img class="location-pic" src="' + picUrl + '">'
+    var picUrlBase = "https://arcimagery.s3.amazonaws.com/disasters/2017-dominica-maria/financial_inst_and_market_assessment/";
+    var picHtml = '<img id="pic1" class="location-pic" src="' + picUrlBase + locProps['picture0'] + '">'
+    if(locProps['picture1'].length > 0){
+      loadingCount++;
+      picHtml += '<img class="location-pic" src="' + picUrlBase + locProps['picture1'] + '">'
+    }
     $('#info-location-picture').html(picHtml);
+    $('.location-pic').load(function(){
+      loadedCount++;
+      if(loadedCount == loadingCount){
+        $("#info-pic-loading").hide();
+      }
+    })
     $('#info-location-time').text(d3.isoParse(locProps.metasubmissionTime))
   })
 }
