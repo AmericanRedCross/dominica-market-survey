@@ -20,7 +20,7 @@ var map = L.map('map', {
 });
 
 // get the data from the google spreadhsheet
-var publicSpreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1Ee2kuKdzqSZ9M62p1OLsaRPIquAKvl_eSDRPf0kO1kI/edit?usp=sharing';
+var publicSpreadsheetUrl = 'https://docs.google.com/spreadsheets/d/1Ee2kuKdzqSZ9M62p1OLsaRPIquAKvl_eSDRPf0kO1kI/edit#gid=0';
 function init() {
   Tabletop.init( { key: publicSpreadsheetUrl,
                    callback: drawCalendar,
@@ -30,13 +30,13 @@ function init() {
 
 function awesomeIcon(type){
   switch(type){
-    case "bank":
+    case "financial":
         return "bank";
         break;
-    case "atm":
-        return "credit-card";
-        break;
-    case "shop":
+    // case "atm":
+    //     return "credit-card";
+    //     break;
+    case "market":
         return "shopping-basket";
         break;
     default:
@@ -92,7 +92,7 @@ function onClick(event){
     indicatorMarker.bringToBack();
 
     var loadedCount = 0;
-    var loadingCount = 1;
+    var loadingCount = 0;
     $("#info-pic-loading").show();
 
     $('#info-location-name').text(locProps['name']);
@@ -100,8 +100,12 @@ function onClick(event){
     $('#info-location-status').text(locProps['status']);
     $('#info-location-notes').text(locProps['status-notes']);
 
+    var picHtml = "";
     var picUrlBase = "https://arcimagery.s3.amazonaws.com/disasters/2017-dominica-maria/financial_inst_and_market_assessment/";
-    var picHtml = '<img id="pic1" class="location-pic" src="' + picUrlBase + locProps['picture0'] + '">'
+    if(locProps['picture0'].length > 0){
+      loadingCount++;
+      picHtml += '<img class="location-pic" src="' + picUrlBase + locProps['picture0'] + '">'
+    }
     if(locProps['picture1'].length > 0){
       loadingCount++;
       picHtml += '<img class="location-pic" src="' + picUrlBase + locProps['picture1'] + '">'
@@ -113,7 +117,7 @@ function onClick(event){
         $("#info-pic-loading").hide();
       }
     })
-    $('#info-location-time').text(d3.isoParse(locProps.metasubmissionTime))
+    $('#info-location-time').text(d3.isoParse(locProps._submission_time))
   })
 }
 
@@ -122,7 +126,7 @@ function drawCalendar(info, tabletop){
 
   data = info;
   for(var i=0; i<data.length; i++){
-    data[i].today =  data[i].metasubmissionTime.slice(0,10);
+    data[i].today =  data[i]._submission_time.slice(0,10);
   }
 
   var calendarRows = function(month){
@@ -130,9 +134,9 @@ function drawCalendar(info, tabletop){
     return d3.timeWeeks(d3.timeWeek.floor(month), d3.timeMonth.offset(month,1)).length
   }
 
-  var minDate = d3.min(data, function(d) { return new Date(d.metasubmissionTime) })
+  var minDate = d3.min(data, function(d) { return new Date(d._submission_time) })
   // var maxDate = new Date("2016-03-28")
-  var maxDate = d3.max(data, function(d) { return new Date(d.metasubmissionTime) })
+  var maxDate = d3.max(data, function(d) { return new Date(d._submission_time) })
 
  var cellMargin = 2,
      cellSize = 20;
